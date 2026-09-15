@@ -1,4 +1,4 @@
-// Хранилище данных с поддержкой localStorage для Vercel / локальной разработки
+// Обновите только интерфейсы в начале файла src/lib/db.ts
 export interface DepartureFlight {
   id: number;
   flightNumber: string;
@@ -12,8 +12,20 @@ export interface DepartureFlight {
   boardingStart: string;
   boardingEnd: string;
   gate: string;
-  status: 'По расписанию' | 'Задержан' | 'Отменен' | 'Вылетел';
+  status: 'По расписанию' | 'Задержан' | 'Отменен' | 'Вылетел' | 'Регистрация' | 'Регистрация закончена' | 'Посадка' | 'Посадка закончена';
 }
+
+export interface ArrivalFlight {
+  id: number;
+  flightNumber: string;
+  airline: string;
+  origin: string;
+  scheduledArrival: string;
+  actualArrival?: string;
+  baggageBelt?: string;
+  status: 'Прибытие ожидается' | 'Отправлен на запасной аэродром' | 'Задержан' | 'Отменен' | 'Прибыл';
+}
+
 
 export interface ArrivalFlight {
   id: number;
@@ -37,15 +49,17 @@ const getStorage = () => {
         return d.toISOString();
       };
       
-      const initialDeps = [
-        { id: 1, flightNumber: 'RT-256', airline: 'UVT aero', destination: 'Пермь', scheduledDeparture: setTime(13, 50), actualDeparture: setTime(18, 30), registrationStart: setTime(11, 50), registrationEnd: setTime(13, 10), checkInDesks: '1-2', boardingStart: setTime(13, 15), boardingEnd: setTime(13, 40), gate: '2', status: 'По расписанию' as const },
-        { id: 2, flightNumber: 'SU-1519', airline: 'АЭРОФЛОТ', destination: 'Москва(ШРМ)', scheduledDeparture: setTime(19, 0), registrationStart: setTime(17, 0), registrationEnd: setTime(18, 20), checkInDesks: '3-4', boardingStart: setTime(18, 25), boardingEnd: setTime(18, 50), gate: '1', status: 'По расписанию' as const },
-        { id: 3, flightNumber: 'N4-748', airline: 'Nordwind', destination: 'Казань', scheduledDeparture: setTime(9, 55), actualDeparture: setTime(14, 5), registrationStart: setTime(7, 55), registrationEnd: setTime(9, 15), checkInDesks: '5', boardingStart: setTime(9, 20), boardingEnd: setTime(9, 45), gate: '3', status: 'Задержан' as const }
-      ];
-      
-      const initialArrs = [
-        { id: 4, flightNumber: 'S7-2630', airline: 'S7 Airlines', origin: 'Москва(ДМД)', scheduledArrival: setTime(8, 15), baggageBelt: '1', status: 'Прибытие ожидается' as const }
-      ];
+      // Замените массив initialDeps внутри функции getStorage() в файле src/lib/db.ts
+const initialDeps: DepartureFlight[] = [
+  { id: 1, flightNumber: 'RT-256', airline: 'UVT aero', destination: 'Пермь', scheduledDeparture: setTime(13, 50), actualDeparture: setTime(18, 30), registrationStart: setTime(11, 50), registrationEnd: setTime(13, 10), checkInDesks: '1-2', boardingStart: setTime(13, 15), boardingEnd: setTime(13, 40), gate: '2', status: 'По расписанию' },
+  { id: 2, flightNumber: 'SU-1519', airline: 'АЭРОФЛОТ', destination: 'Москва(ШРМ)', scheduledDeparture: setTime(19, 0), registrationStart: setTime(17, 0), registrationEnd: setTime(18, 20), checkInDesks: '3-4', boardingStart: setTime(18, 25), boardingEnd: setTime(18, 50), gate: '1', status: 'По расписанию' },
+  { id: 3, flightNumber: 'N4-748', airline: 'Nordwind', destination: 'Казань', scheduledDeparture: setTime(9, 55), actualDeparture: setTime(14, 5), registrationStart: setTime(7, 55), registrationEnd: setTime(9, 15), checkInDesks: '5', boardingStart: setTime(9, 20), boardingEnd: setTime(9, 45), gate: '3', status: 'Задержан' }
+];
+
+const initialArrs: ArrivalFlight[] = [
+  { id: 4, flightNumber: 'S7-2630', airline: 'S7 Airlines', origin: 'Москва(ДМД)', scheduledArrival: setTime(8, 15), baggageBelt: '1', status: 'Прибытие ожидается' }
+];
+
 
       window.localStorage.setItem('kon_departures', JSON.stringify(initialDeps));
       window.localStorage.setItem('kon_arrivals', JSON.stringify(initialArrs));
