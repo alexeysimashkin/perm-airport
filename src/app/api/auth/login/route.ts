@@ -1,23 +1,26 @@
 import { NextResponse } from 'next/server';
 
 export async function POST(request: Request) {
-  const { password } = await request.json();
-  const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "Kondratovo2026"; // Пароль по умолчанию
+  try {
+    const { password } = await request.json();
 
-  if (password === ADMIN_PASSWORD) {
-    const response = NextResponse.json({ success: true });
-    
-    // Устанавливаем HTTP-only куку для защиты сессии
-    response.cookies.set('admin_session', 'authenticated', {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: 60 * 60 * 24, // 1 день
-      path: '/',
-    });
+    if (password === 'admin123') {
+      const response = NextResponse.json({ success: true });
+      
+      // Записываем куку сессии на 4 часа
+      response.cookies.set('admin_session', 'authenticated', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        maxAge: 60 * 60 * 4,
+        path: '/',
+      });
 
-    return response;
+      return response;
+    }
+
+    return NextResponse.json({ error: 'Неверный пароль сотрудника' }, { status: 401 });
+  } catch (err) {
+    return NextResponse.json({ error: 'Ошибка сервера' }, { status: 500 });
   }
-
-  return NextResponse.json({ error: 'Неверный пароль сотрудника' }, { status: 401 });
 }
