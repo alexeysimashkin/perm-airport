@@ -1,6 +1,5 @@
 // src/app/layout.tsx
 import type { Metadata } from "next";
-import "./globals.css"; // Если используете стили Tailwind
 
 export const metadata: Metadata = {
   title: "Аэропорт Кондратово (KON) - Пермь",
