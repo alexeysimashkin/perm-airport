@@ -1,40 +1,34 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { db } from '../../../lib/db';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  const type = searchParams.get('type') || 'departure'; // departure или arrival
-  const dateParam = searchParams.get('date') || 'today'; // today или tomorrow
+  const type = searchParams.get('type') || 'departure';
+  const dateParam = searchParams.get('date') || 'today';
 
   const now = new Date();
-  const startOfPeriod = new Date();
-  const endOfPeriod = new Date();
-
-  if (dateParam === 'tomorrow') {
-    startOfPeriod.setDate(now.getDate() + 1);
-    startOfPeriod.setHours(0, 0, 0, 0);
-    endOfPeriod.setDate(now.getDate() + 1);
-    endOfPeriod.setHours(23, 59, 59, 999);
-  } else {
-    startOfPeriod.setHours(0, 0, 0, 0);
-    endOfPeriod.setHours(23, 59, 59, 999);
-  }
+  const isTomorrowRequested = dateParam === 'tomorrow';
 
   if (type === 'departure') {
-    const flights = await prisma.departure.findMany({
-      where: { scheduledDeparture: { gte: startOfPeriod, lte: endOfPeriod } },
-      orderBy: { scheduledDeparture: 'asc' },
+    const flights = db.getDepartures().filter(f => {
+      const flightDate = new Date(f.scheduledDeparture);
+      const isTomorrow = flightDate.getDate() === (now.getDate() + 1);
+      return isTomorrowRequested ? isTomorrow : !isTomorrow;
     });
 
     const mapped = flights.map(f => {
       let currentStatus = f.status;
 
-      // Если статус не финальный ручной, считаем автоматически по времени
       if (!['Вылетел', 'Задержан', 'Отменен'].includes(f.status)) {
-        if (now >= new Date(f.boardingEnd)) currentStatus = 'Посадка закончена';
-        else if (now >= new Date(f.boardingStart)) currentStatus = 'Посадка';
-        else if (now >= new Date(f.registrationEnd)) currentStatus = 'Регистрация закончена';
-        else if (now >= new Date(f.registrationStart)) currentStatus = 'Регистрация';
+        const bEnd = new Date(f.boardingEnd);
+        const bStart = new Date(f.boardingStart);
+        const rEnd = new Date(f.registrationEnd);
+        const rStart = new Date(f.registrationStart);
+
+        if (now >= bEnd) currentStatus = 'Посадка закончена';
+        else if (now >= bStart) currentStatus = 'Посадка';
+        else if (now >= rEnd) currentStatus = 'Регистрация закончена';
+        else if (now >= rStart) currentStatus = 'Регистрация';
         else currentStatus = 'По расписанию';
       }
       return { ...f, status: currentStatus };
@@ -42,9 +36,10 @@ export async function GET(request: Request) {
 
     return NextResponse.json(mapped);
   } else {
-    const flights = await prisma.arrival.findMany({
-      where: { scheduledArrival: { gte: startOfPeriod, lte: endOfPeriod } },
-      orderBy: { scheduledArrival: 'asc' },
+    const flights = db.getArrivals().filter(f => {
+      const flightDate = new Date(f.scheduledArrival);
+      const isTomorrow = flightDate.getDate() === (now.getDate() + 1);
+      return isTomorrowRequested ? isTomorrow : !isTomorrow;
     });
 
     const mapped = flights.map(f => {
