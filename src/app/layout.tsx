@@ -1,4 +1,5 @@
 // src/app/layout.tsx
+import "./globals.css"; // Обязательно добавьте эту строчку обратно!
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
