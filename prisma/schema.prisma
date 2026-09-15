@@ -1,0 +1,41 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Departure {
+  id                  Int      @id @default(autoincrement())
+  flightNumber        String   @map("flight_number")
+  airline             String
+  destination         String
+  scheduledDeparture  DateTime @map("scheduled_departure")
+  actualDeparture     DateTime? @map("actual_departure")
+  registrationStart   DateTime @map("registration_start")
+  registrationEnd     DateTime @map("registration_end")
+  checkInDesks        String   @map("check_in_desks")
+  boardingStart       DateTime @map("boarding_start")
+  boardingEnd         DateTime @map("boarding_end")
+  gate                String
+  status              String   // 'По расписанию', 'Задержан', 'Отменен', 'Вылетел'
+  createdAt           DateTime @default(now()) @map("created_at")
+
+  @@map("departures")
+}
+
+model Arrival {
+  id               Int      @id @default(autoincrement())
+  flightNumber     String   @map("flight_number")
+  airline          String
+  origin           String
+  scheduledArrival DateTime @map("scheduled_arrival")
+  actualArrival    DateTime? @map("actual_arrival")
+  baggageBelt      String?  @map("baggage_belt")
+  status           String   // 'Прибытие ожидается', 'Отправлен на запасной аэродром', 'Задержан', 'Отменен'
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  @@map("arrivals")
+}
