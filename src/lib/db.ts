@@ -116,4 +116,31 @@ export const db = {
     globalStorage.arrivals.push(newFlight);
     return newFlight;
   }
+// ДОБАВИТЬ В КОНЕЦ ОБЪЕКТА db В ФАЙЛЕ src/lib/db.ts:
+export const db = {
+  // ... (предыдущие методы getDepartures, addDeparture и т.д. оставляем)
+  
+  deleteDeparture: (id: number) => {
+    const index = globalStorage.departures.findIndex(f => f.id === id);
+    if (index !== -1) globalStorage.departures.splice(index, 1);
+  },
+  
+  deleteArrival: (id: number) => {
+    const index = globalStorage.arrivals.findIndex(f => f.id === id);
+    if (index !== -1) globalStorage.arrivals.splice(index, 1);
+  },
+  
+  updateDeparture: (id: number, updatedData: Partial<DepartureFlight>) => {
+    const index = globalStorage.departures.findIndex(f => f.id === id);
+    if (index !== -1) {
+      globalStorage.departures[index] = { ...globalStorage.departures[index], ...updatedData };
+    }
+  },
+  
+  updateArrival: (id: number, updatedData: Partial<ArrivalFlight>) => {
+    const index = globalStorage.arrivals.findIndex(f => f.id === id);
+    if (index !== -1) {
+      globalStorage.arrivals[index] = { ...globalStorage.arrivals[index], ...updatedData };
+    }
+  }
 };
