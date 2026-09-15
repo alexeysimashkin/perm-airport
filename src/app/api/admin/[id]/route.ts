@@ -1,5 +1,5 @@
-import { NextResponse } from 'next/server';
-import { db } from '@/lib/db';
+// Замените в самом верху файла src/app/api/admin/[id]/route.ts:
+import { db } from '../../../../lib/db';
 
 // Удаление рейса
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
