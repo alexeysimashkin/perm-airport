@@ -1,7 +1,7 @@
-// Замените в самом верху файла src/app/api/admin/[id]/route.ts:
+import { NextResponse } from 'next/server';
 import { db } from '../../../../lib/db';
 
-// Удаление рейса
+// Удаление рейса по ID
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
   const { searchParams } = new URL(request.url);
   const type = searchParams.get('type'); // departure или arrival
@@ -18,10 +18,10 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
   return NextResponse.json({ success: true });
 }
 
-// Редактирование рейса
+// Редактирование рейса по ID
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
   const { searchParams } = new URL(request.url);
-  const type = searchParams.get('type');
+  const type = searchParams.get('type'); // departure или arrival
   const id = Number(params.id);
   const body = await request.json();
 
