@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import useRouter from 'next/navigation';
-import SplashLoader from '@/components/SplashLoader';
+import SplashLoader from '../components/SplashLoader';
 import Link from 'next/link';
 
 export default function HomePage() {
