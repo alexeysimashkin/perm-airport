@@ -1,4 +1,3 @@
-// Обновите только интерфейсы в начале файла src/lib/db.ts
 export interface DepartureFlight {
   id: number;
   flightNumber: string;
@@ -9,10 +8,10 @@ export interface DepartureFlight {
   registrationStart: string;
   registrationEnd: string;
   checkInDesks: string;
-  boardingStart: string;
-  boardingEnd: string;
+  boardingStart?: string; // Необязательно
+  boardingEnd?: string;   // Необязательно
   gate: string;
-  status: 'По расписанию' | 'Задержан' | 'Отменен' | 'Вылетел' | 'Регистрация' | 'Регистрация закончена' | 'Посадка' | 'Посадка закончена';
+  status: string;
 }
 
 export interface ArrivalFlight {
@@ -23,108 +22,58 @@ export interface ArrivalFlight {
   scheduledArrival: string;
   actualArrival?: string;
   baggageBelt?: string;
-  status: 'Прибытие ожидается' | 'Отправлен на запасной аэродром' | 'Задержан' | 'Отменен' | 'Прибыл';
+  status: string;
 }
 
-
-export interface ArrivalFlight {
-  id: number;
-  flightNumber: string;
-  airline: string;
-  origin: string;
-  scheduledArrival: string;
-  actualArrival?: string;
-  baggageBelt?: string;
-  status: 'Прибытие ожидается' | 'Отправлен на запасной аэродром' | 'Задержан' | 'Отменен' | 'Прибыл';
-}
-
-// Провайдер данных, стабильный в любой среде выполнения
-const getStorage = () => {
-  if (typeof window !== 'undefined') {
-    if (!window.localStorage.getItem('kon_departures')) {
-      const today = new Date();
-      const setTime = (h: number, m: number) => {
-        const d = new Date(today);
-        d.setHours(h, m, 0, 0);
-        return d.toISOString();
-      };
-      
-      // Замените массив initialDeps внутри функции getStorage() в файле src/lib/db.ts
-const initialDeps: DepartureFlight[] = [
-  { id: 1, flightNumber: 'RT-256', airline: 'UVT aero', destination: 'Пермь', scheduledDeparture: setTime(13, 50), actualDeparture: setTime(18, 30), registrationStart: setTime(11, 50), registrationEnd: setTime(13, 10), checkInDesks: '1-2', boardingStart: setTime(13, 15), boardingEnd: setTime(13, 40), gate: '2', status: 'По расписанию' },
-  { id: 2, flightNumber: 'SU-1519', airline: 'АЭРОФЛОТ', destination: 'Москва(ШРМ)', scheduledDeparture: setTime(19, 0), registrationStart: setTime(17, 0), registrationEnd: setTime(18, 20), checkInDesks: '3-4', boardingStart: setTime(18, 25), boardingEnd: setTime(18, 50), gate: '1', status: 'По расписанию' },
-  { id: 3, flightNumber: 'N4-748', airline: 'Nordwind', destination: 'Казань', scheduledDeparture: setTime(9, 55), actualDeparture: setTime(14, 5), registrationStart: setTime(7, 55), registrationEnd: setTime(9, 15), checkInDesks: '5', boardingStart: setTime(9, 20), boardingEnd: setTime(9, 45), gate: '3', status: 'Задержан' }
-];
-
-const initialArrs: ArrivalFlight[] = [
-  { id: 4, flightNumber: 'S7-2630', airline: 'S7 Airlines', origin: 'Москва(ДМД)', scheduledArrival: setTime(8, 15), baggageBelt: '1', status: 'Прибытие ожидается' }
-];
-
-
-      window.localStorage.setItem('kon_departures', JSON.stringify(initialDeps));
-      window.localStorage.setItem('kon_arrivals', JSON.stringify(initialArrs));
-      window.localStorage.setItem('kon_next_id', '5');
-    }
-    
-    return {
-      getDeps: () => JSON.parse(window.localStorage.getItem('kon_departures') || '[]'),
-      getArrs: () => JSON.parse(window.localStorage.getItem('kon_arrivals') || '[]'),
-      saveDeps: (data: any) => window.localStorage.setItem('kon_departures', JSON.stringify(data)),
-      saveArrs: (data: any) => window.localStorage.setItem('kon_arrivals', JSON.stringify(data)),
-      getId: () => Number(window.localStorage.getItem('kon_next_id') || '1'),
-      incrementId: () => window.localStorage.setItem('kon_next_id', String(Number(window.localStorage.getItem('kon_next_id') || '1') + 1))
-    };
-  }
-
-  // Заглушка для серверной пре-сборки Next.js (SSR)
-  return { getDeps: () => [], getArrs: () => [], saveDeps: () => {}, saveArrs: () => {}, getId: () => 1, incrementId: () => {} };
+const globalStorage = globalThis as unknown as {
+  departures: DepartureFlight[];
+  arrivals: ArrivalFlight[];
+  nextId: number;
 };
 
+if (!globalStorage.departures) {
+  const today = new Date();
+  // Генерация времени в часовом поясе Перми (UTC+5)
+  const setPermTime = (hours: number, minutes: number) => {
+    const d = new Date(today);
+    d.setHours(hours, minutes, 0, 0);
+    return d.toISOString();
+  };
+
+  globalStorage.nextId = 5;
+  globalStorage.departures = [
+    { id: 1, flightNumber: 'RT-256', airline: 'UVT aero', destination: 'Пермь', scheduledDeparture: setPermTime(13, 50), actualDeparture: setPermTime(18, 30), registrationStart: setPermTime(11, 50), registrationEnd: setPermTime(13, 10), checkInDesks: '1-2', gate: '2', status: 'По расписанию' },
+    { id: 2, flightNumber: 'SU-1519', airline: 'АЭРОФЛОТ', destination: 'Москва(ШРМ)', scheduledDeparture: setPermTime(19, 0), registrationStart: setPermTime(17, 0), registrationEnd: setPermTime(18, 20), checkInDesks: '3-4', gate: '1', status: 'По расписанию' },
+    { id: 3, flightNumber: 'N4-748', airline: 'Nordwind', destination: 'Казань', scheduledDeparture: setPermTime(9, 55), actualDeparture: setPermTime(14, 5), registrationStart: setPermTime(7, 55), registrationEnd: setPermTime(9, 15), checkInDesks: '5', gate: '3', status: 'Задержан' }
+  ];
+  globalStorage.arrivals = [
+    { id: 4, flightNumber: 'S7-2630', airline: 'S7 Airlines', origin: 'Москва(ДМД)', scheduledArrival: setPermTime(8, 15), baggageBelt: '1', status: 'Прибытие ожидается' }
+  ];
+}
+
 export const db = {
-  getDepartures: () => getStorage().getDeps() as DepartureFlight[],
-  getArrivals: () => getStorage().getArrs() as ArrivalFlight[],
-  
+  getDepartures: () => globalStorage.departures,
+  getArrivals: () => globalStorage.arrivals,
   addDeparture: (flight: Omit<DepartureFlight, 'id'>) => {
-    const store = getStorage();
-    const newFlight = { ...flight, id: store.getId() };
-    const data = store.getDeps();
-    data.push(newFlight);
-    store.saveDeps(data);
-    store.incrementId();
+    const newFlight = { ...flight, id: globalStorage.nextId++ };
+    globalStorage.departures.push(newFlight);
     return newFlight;
   },
-  
   addArrival: (flight: Omit<ArrivalFlight, 'id'>) => {
-    const store = getStorage();
-    const newFlight = { ...flight, id: store.getId() };
-    const data = store.getArrs();
-    data.push(newFlight);
-    store.saveArrs(data);
-    store.incrementId();
+    const newFlight = { ...flight, id: globalStorage.nextId++ };
+    globalStorage.arrivals.push(newFlight);
     return newFlight;
   },
-
   deleteDeparture: (id: number) => {
-    const store = getStorage();
-    const data = store.getDeps().filter((f: any) => f.id !== id);
-    store.saveDeps(data);
+    globalStorage.departures = globalStorage.departures.filter(f => f.id !== id);
   },
-
   deleteArrival: (id: number) => {
-    const store = getStorage();
-    const data = store.getArrs().filter((f: any) => f.id !== id);
-    store.saveArrs(data);
+    globalStorage.arrivals = globalStorage.arrivals.filter(f => f.id !== id);
   },
-
-  updateDeparture: (id: number, updatedData: Partial<DepartureFlight>) => {
-    const store = getStorage();
-    const data = store.getDeps().map((f: any) => f.id === id ? { ...f, ...updatedData } : f);
-    store.saveDeps(data);
+  updateDeparture: (id: number, data: Partial<DepartureFlight>) => {
+    globalStorage.departures = globalStorage.departures.map(f => f.id === id ? { ...f, ...data } : f);
   },
-
-  updateArrival: (id: number, updatedData: Partial<ArrivalFlight>) => {
-    const store = getStorage();
-    const data = store.getArrs().map((f: any) => f.id === id ? { ...f, ...updatedData } : f);
-    store.saveArrs(data);
+  updateArrival: (id: number, data: Partial<ArrivalFlight>) => {
+    globalStorage.arrivals = globalStorage.arrivals.map(f => f.id === id ? { ...f, ...data } : f);
   }
 };
