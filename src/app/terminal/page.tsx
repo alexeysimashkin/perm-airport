@@ -6,75 +6,89 @@ export default function TerminalPage() {
   const [time, setTime] = useState(new Date());
 
   useEffect(() => {
+    // Принудительно устанавливаем темный фон для страницы терминала
+    document.body.style.backgroundColor = '#0b0f19';
+    
     const load = () => {
       fetch('/api/flights?type=departure&date=today')
         .then(res => res.json())
-        .then(data => setFlights(data));
+        .then(data => setFlights(data))
+        .catch(() => {});
     };
     load();
     const fInterval = setInterval(load, 5000);
     const tInterval = setInterval(() => setTime(new Date()), 1000);
-    return () => { clearInterval(fInterval); clearInterval(tInterval); };
+    
+    return () => { 
+      clearInterval(fInterval); 
+      clearInterval(tInterval);
+      document.body.style.backgroundColor = ''; // возвращаем стандартный при уходе
+    };
   }, []);
 
   return (
-    <div className="w-full min-h-screen bg-[#0b0f19] text-white p-6 font-sans select-none">
+    <div style={{ backgroundColor: '#0b0f19', minHeight: '100vh', color: '#fff', margin: '-24px', padding: '24px' }}>
       {/* Шапка табло */}
-      <div className="bg-[#10b981] p-4 rounded-t-xl flex justify-between items-center shadow-lg">
-        <div className="flex items-center space-x-4">
-          <svg className="w-10 h-10 transform -rotate-45 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div className="terminal-header">
+        <div className="terminal-title">
+          <svg style={{ width: '36px', height: '36px', transform: 'rotate(-45deg)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
           </svg>
-          <h1 className="text-3xl font-bold tracking-wide flex items-center gap-2">
-            Отправление <span className="text-emerald-100 font-light text-2xl">/ Departures</span>
-          </h1>
+          <div>
+            Отправление <span style={{ color: '#a7f3d0', fontWeight: 300, fontSize: '20px' }}>/ Departures</span>
+          </div>
         </div>
-        <div className="text-right">
-          <div className="text-4xl font-mono font-bold">{time.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}</div>
-          <div className="text-xl text-emerald-100 font-medium">{time.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' })}</div>
+        <div style={{ textAlign: 'right' }}>
+          <div style={{ fontSize: '36px', fontFamily: 'monospace', fontWeight: 'bold' }}>
+            {time.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+          </div>
+          <div style={{ color: '#a7f3d0', fontSize: '16px', fontWeight: 500, marginTop: '2px' }}>
+            {time.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' })}
+          </div>
         </div>
       </div>
 
-      {/* Шапка таблицы */}
-      <div className="grid grid-cols-12 bg-[#1e293b] p-3 text-sm font-semibold tracking-wider text-slate-400 uppercase border-b border-slate-700 font-mono">
-        <div className="col-span-1">Время <br/><span className="text-xs font-light lowercase">Time</span></div>
-        <div className="col-span-3">Направление <br/><span className="text-xs font-light lowercase">Destination</span></div>
-        <div className="col-span-3">Авиакомпания <br/><span className="text-xs font-light lowercase">Airline</span></div>
-        <div className="col-span-2">Рейс <br/><span className="text-xs font-light lowercase">Flight</span></div>
-        <div className="col-span-1 text-center">Выход <br/><span className="text-xs font-light lowercase">Gate</span></div>
-        <div className="col-span-2 pl-2">Статус <br/><span className="text-xs font-light lowercase">Status</span></div>
+      {/* Заголовки столбцов */}
+      <div className="terminal-grid-th">
+        <div>Время <span style={{ fontSize: '10px', fontWeight: 300 }}>Time</span></div>
+        <div>Направление <span style={{ fontSize: '10px', fontWeight: 300 }}>Destination</span></div>
+        <div>Авиакомпания <span style={{ fontSize: '10px', fontWeight: 300 }}>Airline</span></div>
+        <div>Рейс <span style={{ fontSize: '10px', fontWeight: 300 }}>Flight</span></div>
+        <div style={{ textAlign: 'center' }}>Выход <span style={{ fontSize: '10px', fontWeight: 300 }}>Gate</span></div>
+        <div style={{ textAlign: 'center' }}>Статус <span style={{ fontSize: '10px', fontWeight: 300 }}>Status</span></div>
       </div>
 
-      {/* Список рейсов */}
-      <div className="divide-y divide-slate-800 bg-[#0f172a] rounded-b-xl overflow-hidden">
+      {/* Строки рейсов */}
+      <div style={{ backgroundColor: '#0f172a' }}>
         {flights.map((f) => {
           const isDelayed = f.status === 'Задержан';
           const sched = new Date(f.scheduledDeparture).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
           const actual = f.actualDeparture ? new Date(f.actualDeparture).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }) : '';
 
           return (
-            <div key={f.id} className="grid grid-cols-12 items-center p-4 font-mono text-xl tracking-wide">
-              <div className="col-span-1 flex flex-col justify-center">
+            <div key={f.id} className="terminal-row">
+              {/* Логика зачеркивания старого времени красным */}
+              <div>
                 {isDelayed ? (
-                  <>
-                    <span className="text-red-500 font-bold text-2xl">{actual}</span>
-                    <span className="text-slate-500 line-through text-sm">{sched}</span>
-                  </>
+                  <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    <span style={{ color: '#ef4444', fontWeight: 'bold', fontSize: '22px' }}>{actual}</span>
+                    <span style={{ color: '#64748b', lineThrough: 'line-through', fontSize: '14px', textDecoration: 'line-through' }}>{sched}</span>
+                  </div>
                 ) : (
-                  <span className="text-white font-bold">{sched}</span>
+                  <span style={{ fontWeight: 'bold', color: '#fff' }}>{sched}</span>
                 )}
               </div>
-              <div className="col-span-3 font-sans font-bold text-2xl text-slate-100">{f.destination}</div>
-              <div className="col-span-3 font-sans text-lg text-slate-300 flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-blue-500 inline-block" /> {f.airline}
-              </div>
-              <div className="col-span-2 text-emerald-400 font-bold text-2xl">{f.flightNumber}</div>
-              <div className="col-span-1 text-center bg-slate-800/80 rounded py-1 font-bold text-2xl text-amber-400">{f.gate || '—'}</div>
-              <div className="col-span-2 pl-2">
-                <span className={`px-3 py-1.5 rounded text-sm font-sans font-bold block text-center ${
-                  isDelayed ? 'bg-red-600 text-white animate-pulse' :
-                  f.status === 'Посадка' ? 'bg-blue-600 text-white' :
-                  f.status === 'Регистрация' ? 'bg-amber-600 text-white' : 'bg-slate-800 text-slate-300'
+              
+              <div style={{ fontFamily: 'sans-serif', fontWeight: 'bold', fontSize: '22px' }}>{f.destination}</div>
+              <div style={{ fontFamily: 'sans-serif', fontSize: '16px', color: '#cbd5e1' }}>{f.airline}</div>
+              <div style={{ color: '#34d399', fontWeight: 'bold', fontSize: '22px' }}>{f.flightNumber}</div>
+              <div style={{ textAlign: 'center', backgroundColor: '#1e293b', borderRadius: '6px', color: '#fbbf24', fontWeight: 'bold' }}>{f.gate || '—'}</div>
+              
+              <div>
+                <span className={`terminal-status ${
+                  isDelayed ? 'term-status-delayed' :
+                  f.status === 'Посадка' ? 'term-status-boarding' :
+                  f.status === 'Регистрация' ? 'term-status-checkin' : 'term-status-default'
                 }`}>
                   {f.status}
                 </span>
@@ -82,6 +96,9 @@ export default function TerminalPage() {
             </div>
           );
         })}
+        {flights.length === 0 && (
+          <div style={{ textAlign: 'center', padding: '48px', color: '#64748b', fontFamily: 'sans-serif' }}>Нет ближайших вылетов</div>
+        )}
       </div>
     </div>
   );
