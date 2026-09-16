@@ -1,41 +1,61 @@
 'use client';
-import { motion } from 'framer-motion';
+import { useEffect, useState } from 'react';
 
 export default function SplashLoader({ onComplete }: { onComplete: () => void }) {
-  const word = "КОНДРАТОВО";
-  const letters = word.split("");
+  const letters = "КОНДРАТОВО".split("");
+  const [visible, setVisible] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setVisible(false);
+      onComplete();
+    }, 2800);
+    return () => clearTimeout(timer);
+  }, [onComplete]);
+
+  if (!visible) return null;
 
   return (
-    <motion.div 
-      className="fixed inset-0 bg-slate-950 flex flex-col items-center justify-center z-50"
-      animate={{ opacity: 0 }}
-      transition={{ delay: 2.5, duration: 0.5 }}
-      onAnimationComplete={onComplete}
-    >
-      <motion.div 
-        className="flex space-x-2 md:space-x-4 text-4xl md:text-7xl font-black text-white font-mono"
-        variants={{ animate: { transition: { staggerChildren: 0.1 } } }}
-        initial="initial"
-        animate="animate"
-      >
+    <div style={{
+      position: 'fixed', inset: 0, backgroundColor: '#020617',
+      display: 'flex', flexDirection: 'column', alignItems: 'center',
+      justifyContent: 'center', zIndex: 9999
+    }}>
+      <style>{`
+        @keyframes fadeInUp {
+          from { opacity: 0; transform: translateY(20px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fillBar {
+          from { width: 0; }
+          to { width: 200px; }
+        }
+        .splash-letter {
+          display: inline-block;
+          font-family: monospace;
+          font-size: 56px;
+          font-weight: 900;
+          color: #ffffff;
+          margin: 0 6px;
+          opacity: 0;
+          animation: fadeInUp 0.5s forwards;
+        }
+      `}</style>
+      <div>
         {letters.map((char, i) => (
-          <motion.span
-            key={i}
-            variants={{
-              initial: { opacity: 0, y: 40, scale: 0.5 },
-              animate: { opacity: 1, y: 0, scale: 1, transition: { type: 'spring' } }
-            }}
+          <span 
+            key={i} 
+            className="splash-letter"
+            style={{ animationDelay: `${i * 0.15}s` }}
           >
             {char}
-          </motion.span>
+          </span>
         ))}
-      </motion.div>
-      <motion.div 
-        initial={{ width: 0 }}
-        animate={{ width: 240 }}
-        transition={{ delay: 0.4, duration: 1.5 }}
-        className="h-1 bg-gradient-to-r from-blue-500 to-emerald-500 mt-6 rounded-full"
-      />
-    </motion.div>
+      </div>
+      <div style={{
+        height: '3px', backgroundColor: '#10b981', marginTop: '24px',
+        borderRadius: '4px', animation: 'fillBar 2s ease-in-out forwards'
+      }} />
+    </div>
   );
 }
