@@ -1,5 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
+import { db } from '../../lib/db';
 
 export default function AdminPage() {
   const [formType, setFormType] = useState<'departure' | 'arrival'>('departure');
@@ -7,37 +8,79 @@ export default function AdminPage() {
   const [flights, setFlights] = useState<any[]>([]);
   const [editingId, setEditingId] = useState<number | null>(null);
 
-  const loadFlights = async () => {
-    const res = await fetch(`/api/flights?type=${formType}&date=today`);
-    const data = await res.json();
+  const loadFlights = () => {
+    const data = formType === 'departure' ? db.getDepartures() : db.getArrivals();
+    
+    // Сортировка от 00:00 до 23:59
+    data.sort((a: any, b: any) => {
+      const timeA = new Date(formType === 'departure' ? a.scheduledDeparture : a.scheduledArrival).getTime();
+      const timeB = new Date(formType === 'departure' ? b.scheduledDeparture : b.scheduledArrival).getTime();
+      return timeA - timeB;
+    });
+
     setFlights(data);
   };
 
-  useEffect(() => { loadFlights(); }, [formType]);
+  useEffect(() => {
+    loadFlights();
+  }, [formType]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const url = editingId ? `/api/admin/${editingId}?type=${formType}` : '/api/admin';
-    const method = editingId ? 'PUT' : 'POST';
 
-    const res = await fetch(url, {
-      method: method,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ actionType: formType, ...fields })
-    });
+    if (formType === 'departure') {
+      const payload = {
+        flightNumber: fields.flightNumber,
+        airline: fields.airline,
+        destination: fields.destination,
+        scheduledDeparture: new Date(fields.scheduledDeparture).toISOString(),
+        actualDeparture: fields.actualDeparture ? new Date(fields.actualDeparture).toISOString() : undefined,
+        registrationStart: new Date(fields.registrationStart).toISOString(),
+        registrationEnd: new Date(fields.registrationEnd).toISOString(),
+        checkInDesks: fields.checkInDesks,
+        boardingStart: fields.boardingStart ? new Date(fields.boardingStart).toISOString() : undefined,
+        boardingEnd: fields.boardingEnd ? new Date(fields.boardingEnd).toISOString() : undefined,
+        gate: fields.gate,
+        status: fields.status,
+      };
 
-    if (res.ok) {
-      alert(editingId ? 'Рейс изменен!' : 'Рейс успешно добавлен!');
-      setFields({ status: formType === 'departure' ? 'По расписанию' : 'Прибытие ожидается' });
-      setEditingId(null);
-      loadFlights();
+      if (editingId) {
+        db.updateDeparture(editingId, payload);
+      } else {
+        db.addDeparture(payload);
+      }
+    } else {
+      const payload = {
+        flightNumber: fields.flightNumber,
+        airline: fields.airline,
+        origin: fields.origin,
+        scheduledArrival: new Date(fields.scheduledArrival).toISOString(),
+        actualArrival: fields.actualArrival ? new Date(fields.actualArrival).toISOString() : undefined,
+        baggageBelt: fields.baggageBelt || undefined,
+        status: fields.status,
+      };
+
+      if (editingId) {
+        db.updateArrival(editingId, payload);
+      } else {
+        db.addArrival(payload);
+      }
     }
+
+    alert(editingId ? 'Рейс успешно изменен!' : 'Рейс успешно добавлен!');
+    setFields({ status: formType === 'departure' ? 'По расписанию' : 'Прибытие ожидается' });
+    setEditingId(null);
+    loadFlights();
   };
 
-  const handleDelete = async (id: number) => {
-    if (!confirm('Удалить этот рейс?')) return;
-    const res = await fetch(`/api/admin/${id}?type=${formType}`, { method: 'DELETE' });
-    if (res.ok) loadFlights();
+  const handleDelete = (id: number) => {
+    if (!confirm('Вы уверены, что хотите удалить этот рейс навсегда?')) return;
+    if (formType === 'departure') {
+      db.deleteDeparture(id);
+    } else {
+      db.deleteArrival(id);
+    }
+    loadFlights();
   };
 
   const handleEditInit = (flight: any) => {
@@ -117,7 +160,6 @@ export default function AdminPage() {
                   <div style={{ flex: 1 }}><label className="form-label">Выход (Gate)</label><input required type="text" name="gate" value={fields.gate || ''} onChange={handleChange} className="form-control" placeholder="3" /></div>
                 </div>
                 <div style={{ display: 'flex', gap: '12px' }}>
-                  {/* НЕОБЯЗАТЕЛЬНЫЕ ПОЛЯ ПОСАДКИ (БЕЗ REQUIRED) */}
                   <div style={{ flex: 1 }}><label className="form-label">Посадка Нач. (Опционально)</label><input type="datetime-local" name="boardingStart" value={fields.boardingStart || ''} onChange={handleChange} className="form-control" /></div>
                   <div style={{ flex: 1 }}><label className="form-label">Посадка Кон. (Опционально)</label><input type="datetime-local" name="boardingEnd" value={fields.boardingEnd || ''} onChange={handleChange} className="form-control" /></div>
                 </div>
@@ -156,7 +198,7 @@ export default function AdminPage() {
           </form>
         </div>
 
-        {/* ПРАВАЯ СЕКЦИЯ: ТАБЛИЦА С КНОПКАМИ КАРАНДАША И КОРЗИНЫ */}
+        {/* ПРАВАЯ СЕКЦИЯ: ТАБЛИЦА */}
         <div className="admin-box">
           <h2 style={{ fontSize: '20px', fontWeight: 800, marginBottom: '16px' }}>📋 Список добавленных рейсов</h2>
           <div className="table-wrapper">
