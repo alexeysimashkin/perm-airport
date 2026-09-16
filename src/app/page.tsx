@@ -12,10 +12,22 @@ export default function HomePage() {
 
   useEffect(() => {
     if (!loading) {
-      fetch(`/api/flights?type=${type}&date=${date}`)
-        .then(res => res.json())
-        .then(data => setFlights(data))
-        .catch(() => {});
+      // Функция загрузки данных
+      const loadFlights = () => {
+        fetch(`/api/flights?type=${type}&date=${date}`)
+          .then(res => res.json())
+          .then(data => setFlights(data))
+          .catch(() => {});
+      };
+
+      // Первичная загрузка при смене фильтров
+      loadFlights();
+
+      // Автоматическое обновление табло каждые 30 секунд
+      const interval = setInterval(loadFlights, 30000);
+
+      // Очистка интервала при демонтаже компонента
+      return () => clearInterval(interval);
     }
   }, [type, date, loading]);
 
@@ -29,7 +41,7 @@ export default function HomePage() {
     );
   });
 
-  // Получение времени в формате Перми (UTC+5) для корректного отображения на фронтенде
+  // Получение времени в формате Перми (UTC+5)
   const formatPermTime = (isoString: string) => {
     return new Date(isoString).toLocaleTimeString('ru-RU', {
       timeZone: 'Asia/Yekaterinburg',
@@ -84,7 +96,7 @@ export default function HomePage() {
                 <tbody>
                   {filteredFlights.map((f) => {
                     const isBadStatus = ['Задержан', 'Отменен'].includes(f.status);
-                    const isInfoStatus = ['Посадка', 'Прибыл', 'Регистрация'].includes(f.status);
+                    const isInfoStatus = ['Посадка', 'Прибыл', 'Регистрация', 'Посадка закончена', 'Регистрация закончена'].includes(f.status);
                     const badgeClass = isBadStatus ? 'status-bad' : isInfoStatus ? 'status-info' : 'status-ok';
 
                     return (
