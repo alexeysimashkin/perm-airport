@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import SplashLoader from '../components/SplashLoader';
 import Link from 'next/link';
+import { db } from '../lib/db';
 
 export default function HomePage() {
   const [loading, setLoading] = useState(true);
@@ -12,21 +13,31 @@ export default function HomePage() {
 
   useEffect(() => {
     if (!loading) {
-      // Функция загрузки данных
       const loadFlights = () => {
-        fetch(`/api/flights?type=${type}&date=${date}`)
-          .then(res => res.json())
-          .then(data => setFlights(data))
-          .catch(() => {});
+        const data = type === 'departure' ? db.getDepartures() : db.getArrivals();
+        
+        const now = new Date();
+        const isTomorrowRequested = date === 'tomorrow';
+
+        // Фильтрация по дням
+        const filteredByDate = data.filter((f: any) => {
+          const flightDate = new Date(type === 'departure' ? f.scheduledDeparture : f.scheduledArrival);
+          const isTomorrow = flightDate.getDate() === (now.getDate() + 1);
+          return isTomorrowRequested ? isTomorrow : !isTomorrow;
+        });
+
+        // Сортировка от 00:00 до 23:59
+        filteredByDate.sort((a: any, b: any) => {
+          const timeA = new Date(type === 'departure' ? a.scheduledDeparture : a.scheduledArrival).getTime();
+          const timeB = new Date(type === 'departure' ? b.scheduledDeparture : b.scheduledArrival).getTime();
+          return timeA - timeB;
+        });
+
+        setFlights(filteredByDate);
       };
 
-      // Первичная загрузка при смене фильтров
       loadFlights();
-
-      // Автоматическое обновление табло каждые 30 секунд
       const interval = setInterval(loadFlights, 30000);
-
-      // Очистка интервала при демонтаже компонента
       return () => clearInterval(interval);
     }
   }, [type, date, loading]);
@@ -41,7 +52,6 @@ export default function HomePage() {
     );
   });
 
-  // Получение времени в формате Перми (UTC+5)
   const formatPermTime = (isoString: string) => {
     return new Date(isoString).toLocaleTimeString('ru-RU', {
       timeZone: 'Asia/Yekaterinburg',
