@@ -6,7 +6,7 @@ export default function TerminalPage() {
   const [time, setTime] = useState(new Date());
 
   useEffect(() => {
-    // Принудительно устанавливаем темный фон для страницы терминала
+    // Фиксируем темный фон для профессионального экрана в аэропорту
     document.body.style.backgroundColor = '#0b0f19';
     
     const load = () => {
@@ -22,9 +22,32 @@ export default function TerminalPage() {
     return () => { 
       clearInterval(fInterval); 
       clearInterval(tInterval);
-      document.body.style.backgroundColor = ''; // возвращаем стандартный при уходе
+      document.body.style.backgroundColor = ''; 
     };
   }, []);
+
+  // Вывод времени в формате Перми (UTC+5) для часов терминала
+  const currentPermTime = time.toLocaleTimeString('ru-RU', {
+    timeZone: 'Asia/Yekaterinburg',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit'
+  });
+
+  const currentPermDate = time.toLocaleDateString('ru-RU', {
+    timeZone: 'Asia/Yekaterinburg',
+    day: 'numeric',
+    month: 'long'
+  });
+
+  // Вывод времени рейса по часовому поясу Перми
+  const formatPermFlightTime = (isoString: string) => {
+    return new Date(isoString).toLocaleTimeString('ru-RU', {
+      timeZone: 'Asia/Yekaterinburg',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
 
   return (
     <div style={{ backgroundColor: '#0b0f19', minHeight: '100vh', color: '#fff', margin: '-24px', padding: '24px' }}>
@@ -39,11 +62,11 @@ export default function TerminalPage() {
           </div>
         </div>
         <div style={{ textAlign: 'right' }}>
-          <div style={{ fontSize: '36px', fontFamily: 'monospace', fontWeight: 'bold' }}>
-            {time.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+          <div style={{ fontSize: '36px', fontFamily: 'monospace', fontWeight: 'bold', color: '#ffffff' }}>
+            {currentPermTime}
           </div>
           <div style={{ color: '#a7f3d0', fontSize: '16px', fontWeight: 500, marginTop: '2px' }}>
-            {time.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' })}
+            {currentPermDate} (ПЕРМЬ UTC+5)
           </div>
         </div>
       </div>
@@ -62,12 +85,12 @@ export default function TerminalPage() {
       <div style={{ backgroundColor: '#0f172a' }}>
         {flights.map((f) => {
           const isDelayed = f.status === 'Задержан';
-          const sched = new Date(f.scheduledDeparture).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
-          const actual = f.actualDeparture ? new Date(f.actualDeparture).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }) : '';
+          const sched = formatPermFlightTime(f.scheduledDeparture);
+          const actual = f.actualDeparture ? formatPermFlightTime(f.actualDeparture) : '';
 
           return (
             <div key={f.id} className="terminal-row">
-              {/* Логика зачеркивания старого времени красным */}
+              {/* Логика зачеркивания старого времени красным при задержке */}
               <div>
                 {isDelayed ? (
                   <div style={{ display: 'flex', flexDirection: 'column' }}>
@@ -75,21 +98,21 @@ export default function TerminalPage() {
                     <span style={{ color: '#64748b', fontSize: '14px', textDecoration: 'line-through' }}>{sched}</span>
                   </div>
                 ) : (
-                  <span style={{ fontWeight: 'bold', color: '#fff' }}>{sched}</span>
+                  <span style={{ fontWeight: 'bold', color: '#ffffff' }}>{sched}</span>
                 )}
               </div>
               
-              <div style={{ fontFamily: 'sans-serif', fontWeight: 'bold', fontSize: '22px' }}>{f.destination}</div>
+              <div style={{ fontFamily: 'sans-serif', fontWeight: 'bold', fontSize: '22px', color: '#ffffff' }}>{f.destination}</div>
               <div style={{ fontFamily: 'sans-serif', fontSize: '16px', color: '#cbd5e1' }}>{f.airline}</div>
               <div style={{ color: '#34d399', fontWeight: 'bold', fontSize: '22px' }}>{f.flightNumber}</div>
               <div style={{ textAlign: 'center', backgroundColor: '#1e293b', borderRadius: '6px', color: '#fbbf24', fontWeight: 'bold' }}>{f.gate || '—'}</div>
               
-              <div>
+              <div style={{ display: 'flex', justifyContent: 'center' }}>
                 <span className={`terminal-status ${
                   isDelayed ? 'term-status-delayed' :
                   f.status === 'Посадка' ? 'term-status-boarding' :
                   f.status === 'Регистрация' ? 'term-status-checkin' : 'term-status-default'
-                }`}>
+                }`} style={{ minWidth: '160px', display: 'block' }}>
                   {f.status}
                 </span>
               </div>
