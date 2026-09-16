@@ -29,6 +29,15 @@ export default function HomePage() {
     );
   });
 
+  // Получение времени в формате Перми (UTC+5) для корректного отображения на фронтенде
+  const formatPermTime = (isoString: string) => {
+    return new Date(isoString).toLocaleTimeString('ru-RU', {
+      timeZone: 'Asia/Yekaterinburg',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
   return (
     <>
       {loading && <SplashLoader onComplete={() => setLoading(false)} />}
@@ -38,7 +47,7 @@ export default function HomePage() {
           <header className="airport-header">
             <div>
               <div className="airport-logo">КОНДРАТОВО</div>
-              <div className="airport-sub">МЕЖДУНАРОДНЫЙ АЭРОПОРТ ПЕРМИ • KON</div>
+              <div className="airport-sub">МЕЖДУНАРОДНЫЙ АЭРОПОРТ ПЕРМИ • KON (UTC+5)</div>
             </div>
             <div className="nav-buttons">
               <Link href="/terminal" className="btn-secondary">Табло Терминала 📺</Link>
@@ -49,43 +58,15 @@ export default function HomePage() {
           <main className="main-container">
             <div className="filter-bar">
               <div className="toggle-group">
-                <button 
-                  onClick={() => setType('departure')} 
-                  className={`toggle-btn ${type === 'departure' ? 'active-dep' : ''}`}
-                >
-                  Вылеты
-                </button>
-                <button 
-                  onClick={() => setType('arrival')} 
-                  className={`toggle-btn ${type === 'arrival' ? 'active-arr' : ''}`}
-                >
-                  Прилеты
-                </button>
+                <button onClick={() => setType('departure')} className={`toggle-btn ${type === 'departure' ? 'active-dep' : ''}`}>Вылеты</button>
+                <button onClick={() => setType('arrival')} className={`toggle-btn ${type === 'arrival' ? 'active-arr' : ''}`}>Прилеты</button>
               </div>
 
-              <input 
-                type="text" 
-                placeholder="Поиск рейса, авиакомпании, города..." 
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="search-input"
-              />
+              <input type="text" placeholder="Поиск рейса, авиакомпании, города..." value={search} onChange={(e) => setSearch(e.target.value)} className="search-input" />
 
               <div className="toggle-group">
-                <button 
-                  onClick={() => setDate('today')} 
-                  className={`toggle-btn ${date === 'today' ? 'btn-secondary' : ''}`}
-                  style={date === 'today' ? {backgroundColor: '#334155', color: '#fff'} : {}}
-                >
-                  Сегодня
-                </button>
-                <button 
-                  onClick={() => setDate('tomorrow')} 
-                  className={`toggle-btn ${date === 'tomorrow' ? 'btn-secondary' : ''}`}
-                  style={date === 'tomorrow' ? {backgroundColor: '#334155', color: '#fff'} : {}}
-                >
-                  Завтра
-                </button>
+                <button onClick={() => setDate('today')} className={`toggle-btn ${date === 'today' ? 'btn-secondary' : ''}`} style={date === 'today' ? {backgroundColor: '#e2e8f0', color: '#0f172a'} : {}}>Сегодня</button>
+                <button onClick={() => setDate('tomorrow')} className={`toggle-btn ${date === 'tomorrow' ? 'btn-secondary' : ''}`} style={date === 'tomorrow' ? {backgroundColor: '#e2e8f0', color: '#0f172a'} : {}}>Завтра</button>
               </div>
             </div>
 
@@ -93,7 +74,7 @@ export default function HomePage() {
               <table className="tablo-table">
                 <thead>
                   <tr>
-                    <th>Время</th>
+                    <th>Время (Пермь)</th>
                     <th>{type === 'departure' ? 'Куда' : 'Откуда'}</th>
                     <th>Авиакомпания</th>
                     <th>Рейс</th>
@@ -102,36 +83,23 @@ export default function HomePage() {
                 </thead>
                 <tbody>
                   {filteredFlights.map((f) => {
-                    const timeStr = new Date(type === 'departure' ? f.scheduledDeparture : f.scheduledArrival)
-                      .toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
-                    
                     const isBadStatus = ['Задержан', 'Отменен'].includes(f.status);
                     const isInfoStatus = ['Посадка', 'Прибыл', 'Регистрация'].includes(f.status);
                     const badgeClass = isBadStatus ? 'status-bad' : isInfoStatus ? 'status-info' : 'status-ok';
 
                     return (
                       <tr key={f.id}>
-                        <td className="time-cell">{timeStr}</td>
+                        <td className="time-cell">{formatPermTime(type === 'departure' ? f.scheduledDeparture : f.scheduledArrival)}</td>
                         <td className="city-cell">{type === 'departure' ? f.destination : f.origin}</td>
                         <td className="airline-cell">{f.airline}</td>
-                        <td>
-                          <Link href={`/flight/${f.id}?type=${type}`} className="flight-cell">
-                            {f.flightNumber}
-                          </Link>
-                        </td>
-                        <td>
-                          <span className={`status-badge ${badgeClass}`}>
-                            {f.status}
-                          </span>
-                        </td>
+                        <td><Link href={`/flight/${f.id}?type=${type}`} className="flight-cell">{f.flightNumber}</Link></td>
+                        <td><span className={`status-badge ${badgeClass}`}>{f.status}</span></td>
                       </tr>
                     );
                   })}
                   {filteredFlights.length === 0 && (
                     <tr>
-                      <td colSpan={5} style={{ textAlign: 'center', padding: '32px', color: '#64748b' }}>
-                        Нет доступных рейсов
-                      </td>
+                      <td colSpan={5} style={{ textAlign: 'center', padding: '32px', color: '#64748b' }}>Нет доступных рейсов</td>
                     </tr>
                   )}
                 </tbody>
