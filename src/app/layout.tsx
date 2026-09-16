@@ -1,20 +1,18 @@
-// src/app/layout.tsx
-import "./globals.css"; // Обязательно добавьте эту строчку обратно!
+import "./globals.css";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Аэропорт Кондратово (KON) - Пермь",
-  description: "Официальный сайт и онлайн-табло аэропорта",
+  title: "Международный аэропорт Кондратово (KON)",
+  description: "Онлайн-табло и мульти-система управления рейсами",
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ru">
-      <body className="bg-slate-900 text-slate-100 antialiased">
+      <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      </head>
+      <body style={{ backgroundColor: "#0b0f19", color: "#f1f5f9", margin: 0 }}>
         {children}
       </body>
     </html>
