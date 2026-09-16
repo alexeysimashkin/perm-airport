@@ -1,3 +1,165 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: #0b0f19;
+  color: #f1f5f9;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  padding: 24px;
+}
+
+/* Стили главного сайта */
+.airport-header {
+  max-width: 1100px;
+  margin: 0 auto 40px auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.airport-logo {
+  font-size: 32px;
+  font-weight: 900;
+  letter-spacing: -0.5px;
+  color: #ffffff;
+}
+
+.airport-sub {
+  color: #10b981;
+  font-family: monospace;
+  font-size: 14px;
+  margin-top: 4px;
+}
+
+.nav-buttons {
+  display: flex;
+  gap: 12px;
+}
+
+.btn-secondary {
+  background-color: #1e293b;
+  color: #f1f5f9;
+  padding: 10px 18px;
+  border-radius: 10px;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+  border: 1px solid #334155;
+  transition: background 0.2s;
+}
+.btn-secondary:hover { background-color: #334155; }
+
+.btn-primary {
+  background-color: #2563eb;
+  color: #ffffff;
+  padding: 10px 18px;
+  border-radius: 10px;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+  transition: background 0.2s;
+}
+.btn-primary:hover { background-color: #3b82f6; }
+
+.main-container {
+  max-width: 1100px;
+  margin: 0 auto;
+  background-color: rgba(30, 41, 59, 0.4);
+  border: 1px solid rgba(51, 65, 85, 0.5);
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+}
+
+/* Панель фильтров */
+.filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.toggle-group {
+  display: flex;
+  background-color: #0f172a;
+  padding: 4px;
+  border-radius: 12px;
+  border: 1px solid #334155;
+}
+
+.toggle-btn {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  padding: 8px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.toggle-btn.active-dep { background-color: #059669; color: #fff; }
+.toggle-btn.active-arr { background-color: #2563eb; color: #fff; }
+
+.search-input {
+  flex: 1;
+  max-width: 450px;
+  background-color: #0f172a;
+  border: 1px solid #334155;
+  color: #fff;
+  padding: 10px 16px;
+  border-radius: 12px;
+  font-size: 14px;
+  outline: none;
+}
+.search-input:focus { border-color: #64748b; }
+
+/* Таблица онлайн табло */
+.table-wrapper {
+  overflow-x: auto;
+  border: 1px solid #334155;
+  border-radius: 12px;
+}
+
+.tablo-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 14px;
+}
+
+.tablo-table th {
+  background-color: #0f172a;
+  color: #94a3b8;
+  padding: 16px;
+  font-weight: 600;
+  border-b: 1px solid #334155;
+}
+
+.tablo-table td {
+  padding: 16px;
+  border-bottom: 1px solid rgba(51, 65, 85, 0.4);
+}
+.tablo-table tr:hover { background-color: rgba(51, 65, 85, 0.2); }
+
+.time-cell { font-family: monospace; font-weight: 700; color: #fff; font-size: 15px; }
+.city-cell { font-size: 16px; font-weight: 500; }
+.airline-cell { color: #cbd5e1; }
+.flight-cell { font-family: monospace; font-weight: 700; color: #34d399; text-decoration: none; }
+.flight-cell:hover { text-decoration: underline; }
+
+.status-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 700;
+}
+.status-ok { background-color: rgba(52, 211, 153, 0.15); color: #34d399; }
+.status-bad { background-color: rgba(239, 68, 68, 0.15); color: #f87171; }
+.status-info { background-color: rgba(59, 130, 246, 0.15); color: #60a5fa; }
