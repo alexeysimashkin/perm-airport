@@ -1,22 +1,34 @@
 'use client';
 import { useState, useEffect } from 'react';
+import { db } from '../../lib/db';
 
 export default function TerminalPage() {
   const [flights, setFlights] = useState<any[]>([]);
   const [time, setTime] = useState(new Date());
 
   useEffect(() => {
-    // Фиксируем темный фон для профессионального экрана в аэропорту
     document.body.style.backgroundColor = '#0b0f19';
     
     const load = () => {
-      fetch('/api/flights?type=departure&date=today')
-        .then(res => res.json())
-        .then(data => setFlights(data))
-        .catch(() => {});
+      const data = db.getDepartures();
+      const now = new Date();
+
+      // Фильтруем только сегодняшние рейсы
+      const todayDeps = data.filter((f: any) => {
+        const flightDate = new Date(f.scheduledDeparture);
+        return flightDate.getDate() === now.getDate();
+      });
+
+      // Сортировка от 00:00 до 23:59
+      todayDeps.sort((a: any, b: any) => 
+        new Date(a.scheduledDeparture).getTime() - new Date(b.scheduledDeparture).getTime()
+      );
+
+      setFlights(todayDeps);
     };
+
     load();
-    const fInterval = setInterval(load, 5000);
+    const fInterval = setInterval(load, 5000); // Обновление сетки каждые 5 сек
     const tInterval = setInterval(() => setTime(new Date()), 1000);
     
     return () => { 
@@ -26,7 +38,6 @@ export default function TerminalPage() {
     };
   }, []);
 
-  // Вывод времени в формате Перми (UTC+5) для часов терминала
   const currentPermTime = time.toLocaleTimeString('ru-RU', {
     timeZone: 'Asia/Yekaterinburg',
     hour: '2-digit',
@@ -40,7 +51,6 @@ export default function TerminalPage() {
     month: 'long'
   });
 
-  // Вывод времени рейса по часовому поясу Перми
   const formatPermFlightTime = (isoString: string) => {
     return new Date(isoString).toLocaleTimeString('ru-RU', {
       timeZone: 'Asia/Yekaterinburg',
@@ -51,7 +61,6 @@ export default function TerminalPage() {
 
   return (
     <div style={{ backgroundColor: '#0b0f19', minHeight: '100vh', color: '#fff', margin: '-24px', padding: '24px' }}>
-      {/* Шапка табло */}
       <div className="terminal-header">
         <div className="terminal-title">
           <svg style={{ width: '36px', height: '36px', transform: 'rotate(-45deg)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -71,7 +80,6 @@ export default function TerminalPage() {
         </div>
       </div>
 
-      {/* Заголовки столбцов */}
       <div className="terminal-grid-th">
         <div>Время <span style={{ fontSize: '10px', fontWeight: 300 }}>Time</span></div>
         <div>Направление <span style={{ fontSize: '10px', fontWeight: 300 }}>Destination</span></div>
@@ -81,7 +89,6 @@ export default function TerminalPage() {
         <div style={{ textAlign: 'center' }}>Статус <span style={{ fontSize: '10px', fontWeight: 300 }}>Status</span></div>
       </div>
 
-      {/* Строки рейсов */}
       <div style={{ backgroundColor: '#0f172a' }}>
         {flights.map((f) => {
           const isDelayed = f.status === 'Задержан';
@@ -90,7 +97,6 @@ export default function TerminalPage() {
 
           return (
             <div key={f.id} className="terminal-row">
-              {/* Логика зачеркивания старого времени красным при задержке */}
               <div>
                 {isDelayed ? (
                   <div style={{ display: 'flex', flexDirection: 'column' }}>
