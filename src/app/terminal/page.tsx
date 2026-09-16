@@ -72,7 +72,7 @@ export default function TerminalPage() {
                 {isDelayed ? (
                   <div style={{ display: 'flex', flexDirection: 'column' }}>
                     <span style={{ color: '#ef4444', fontWeight: 'bold', fontSize: '22px' }}>{actual}</span>
-                    <span style={{ color: '#64748b', lineThrough: 'line-through', fontSize: '14px', textDecoration: 'line-through' }}>{sched}</span>
+                    <span style={{ color: '#64748b', fontSize: '14px', textDecoration: 'line-through' }}>{sched}</span>
                   </div>
                 ) : (
                   <span style={{ fontWeight: 'bold', color: '#fff' }}>{sched}</span>
