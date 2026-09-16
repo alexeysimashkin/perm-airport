@@ -4,14 +4,17 @@
   padding: 0;
 }
 
-body {
-  background-color: #f8fafc;
-  color: #1e293b;
+html, body {
+  background-color: #f8fafc !important;
+  color: #1e293b !important;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+body {
   padding: 24px;
 }
 
-/* Шапка и Общие стили светлой темы */
+/* Элементы интерфейса */
 .airport-header {
   max-width: 1200px;
   margin: 0 auto 32px auto;
@@ -63,9 +66,7 @@ body {
   font-size: 14px;
   font-weight: 600;
   box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
-  transition: background 0.2s;
 }
-.btn-primary:hover { background-color: #1d4ed8; }
 
 .main-container {
   max-width: 1200px;
@@ -74,10 +75,9 @@ body {
   border: 1px solid #e2e8f0;
   border-radius: 24px;
   padding: 24px;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -4px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
 }
 
-/* Фильтры */
 .filter-bar {
   display: flex;
   flex-wrap: wrap;
@@ -104,7 +104,6 @@ body {
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s;
 }
 .toggle-btn.active-dep { background-color: #059669; color: #fff; }
 .toggle-btn.active-arr { background-color: #2563eb; color: #fff; }
@@ -119,11 +118,8 @@ body {
   border-radius: 14px;
   font-size: 14px;
   outline: none;
-  transition: border 0.2s;
 }
-.search-input:focus { border-color: #cbd5e1; background-color: #fff; }
 
-/* Таблицы */
 .table-wrapper {
   overflow-x: auto;
   border: 1px solid #e2e8f0;
@@ -133,7 +129,6 @@ body {
 .tablo-table {
   width: 100%;
   border-collapse: collapse;
-  text-align: left;
   font-size: 14px;
 }
 
@@ -149,13 +144,10 @@ body {
   padding: 18px;
   border-bottom: 1px solid #f1f5f9;
 }
-.tablo-table tr:hover { background-color: #f8fafc; }
 
 .time-cell { font-family: monospace; font-weight: 700; color: #0f172a; font-size: 16px; }
-.city-cell { font-size: 16px; font-weight: 600; color: #0f172a; }
-.airline-cell { color: #475569; font-weight: 500; }
+.city-cell { font-size: 16px; font-weight: 600; }
 .flight-cell { font-family: monospace; font-weight: 700; color: #059669; text-decoration: none; }
-.flight-cell:hover { text-decoration: underline; }
 
 .status-badge {
   display: inline-block;
@@ -168,12 +160,12 @@ body {
 .status-bad { background-color: #fef2f2; color: #dc2626; }
 .status-info { background-color: #eff6ff; color: #2563eb; }
 
-/* --- СТИЛИ ДЛЯ АДМИН-ПАНЕЛИ --- */
+/* Панель администратора */
 .admin-grid {
   display: grid;
   grid-template-columns: 1fr;
   gap: 24px;
-  max-width: 1300px;
+  max-width: 1200px;
   margin: 0 auto;
 }
 @media (min-width: 1024px) {
@@ -181,11 +173,10 @@ body {
 }
 
 .admin-box {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
   border-radius: 20px;
   padding: 24px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
 }
 
 .form-label {
@@ -195,7 +186,6 @@ body {
   text-transform: uppercase;
   color: #64748b;
   margin-bottom: 6px;
-  letter-spacing: 0.5px;
 }
 
 .form-control {
@@ -206,47 +196,23 @@ body {
   padding: 10px 14px;
   color: #0f172a;
   outline: none;
-  font-size: 14px;
-  transition: all 0.2s;
 }
-.form-control:focus { border-color: #94a3b8; background: #fff; }
 
-.action-btn {
-  display: flex;
-  justify-content: center;
-  gap: 16px;
-}
 .action-btn button {
   background: none;
   border: none;
   cursor: pointer;
   font-size: 18px;
-  transition: transform 0.15s;
-}
-.action-btn button:hover { transform: scale(1.2); }
-
-/* --- СТИЛИ ДЛЯ ТАБЛО ВНУТРИ АЭРОПОРТА (ТЕРМИНАЛ) --- */
-.terminal-body {
-  background-color: #0b0f19 !important; /* Экран в аэропорту остается профессиональным темным */
-  padding: 0 !important;
+  margin: 0 4px;
 }
 
+/* Табло терминала внутри аэропорта */
 .terminal-header {
   background-color: #10b981;
   padding: 20px 24px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
-}
-
-.terminal-title {
-  font-size: 28px;
-  font-weight: 800;
-  color: #ffffff;
-  display: flex;
-  align-items: center;
-  gap: 16px;
 }
 
 .terminal-grid-th {
@@ -257,9 +223,6 @@ body {
   color: #94a3b8;
   font-family: monospace;
   font-size: 13px;
-  text-transform: uppercase;
-  font-weight: 700;
-  border-bottom: 2px solid #334155;
 }
 
 .terminal-row {
@@ -272,19 +235,4 @@ body {
   font-family: monospace;
   color: #ffffff;
   font-size: 20px;
-  letter-spacing: 0.5px;
 }
-.terminal-row:nth-child(even) { background-color: #0b0f19; }
-
-.terminal-status {
-  text-align: center;
-  padding: 6px 10px;
-  border-radius: 6px;
-  font-size: 13px;
-  font-weight: 800;
-  font-family: sans-serif;
-}
-.term-status-delayed { background-color: #dc2626; color: #ffffff; animation: pulse 1.5s infinite; }
-.term-status-boarding { background-color: #2563eb; color: #ffffff; }
-.term-status-checkin { background-color: #d97706; color: #ffffff; }
-.term-status-default { background-color: #334155; color: #cbd5e1; }
