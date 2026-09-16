@@ -129,7 +129,7 @@ export default function HomePage() {
                   })}
                   {filteredFlights.length === 0 && (
                     <tr>
-                      <td colSpan={5} style={{ textCenter: 'center', padding: '32px', color: '#64748b' }}>
+                      <td colSpan={5} style={{ textAlign: 'center', padding: '32px', color: '#64748b' }}>
                         Нет доступных рейсов
                       </td>
                     </tr>
